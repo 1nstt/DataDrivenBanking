@@ -42,3 +42,5 @@ Esto:
 ## ⚠️ Advertencias
 
 **Importante**: Cada vez que se inicia `docker-compose up` con el servicio `golden-to-service` activo, los datos se cargarán nuevamente en MongoDB. Esto puede resultar en duplicados. Si quieres evitar esto, comenta o deshabilita el servicio en el `docker-compose.yml`.
+
+:3
