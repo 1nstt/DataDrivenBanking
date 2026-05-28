@@ -6,7 +6,7 @@ WORKDIR /app
 RUN pip install --no-cache-dir pandas numpy scikit-learn pymongo
 
 # Copiar archivos necesarios
-COPY load_to_mongodb.py .
+COPY lsh2.py .
 
 # Ejecutar el script
-CMD ["python3", "load_to_mongodb.py"]
+CMD ["python3", "lsh2.py"]

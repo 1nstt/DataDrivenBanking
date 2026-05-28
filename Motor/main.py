@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 import os
 import json
-from pymongo import MongoClient
+import time
+from pymongo import MongoClient, errors
 
 # =========================================================
 # CONFIGURACIÓN DE MONGODB
@@ -14,8 +15,26 @@ MONGO_PASSWORD = os.getenv("MONGO_PASSWORD", "password")
 MONGO_DB = os.getenv("MONGO_DB", "bank_db")
 MONGO_COLLECTION = os.getenv("MONGO_COLLECTION", "clientes_lsh")
 
-connection_string = f"mongodb://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/"
-client = MongoClient(connection_string, serverSelectionTimeoutMS=5000)
+def conectar_mongodb_con_reintentos():
+    connection_string = f"mongodb://{MONGO_USERNAME}:{MONGO_PASSWORD}@{MONGO_HOST}:{MONGO_PORT}/"
+    cliente = MongoClient(connection_string, serverSelectionTimeoutMS=3000)
+    
+    max_intentos = 10
+    for intento in range(1, max_intentos + 1):
+        try:
+            print(f"[*] Verificando conexión a MongoDB ({MONGO_HOST}:{MONGO_PORT}) - Intento {intento}/{max_intentos}...")
+            cliente.admin.command('ping')
+            print("✓ ¡Conexión a MongoDB establecida exitosamente!\n")
+            return cliente
+        except errors.ConnectionFailure:
+            if intento < max_intentos:
+                print("⏳ MongoDB aún no está listo. Reintentando en 3 segundos...\n")
+                time.sleep(3)
+            else:
+                print("❌ Error crítico: Se agotaron los intentos de conexión a MongoDB.")
+                exit(1)
+
+client = conectar_mongodb_con_reintentos()
 
 def evaluar_cliente(nuevo_cliente_df, mean, scale, R):
     # 1. Escalar los datos manualmente usando la media y desviación estándar de la base histórica
