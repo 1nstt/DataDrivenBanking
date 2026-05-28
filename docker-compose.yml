@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mongodb:
@@ -47,6 +47,25 @@ services:
     networks:
       - datadriven
     restart: "no"
+
+  motor:
+    build:
+      context: ./Motor
+      dockerfile: Dockerfile
+    container_name: motor
+    volumes:
+      - .:/app # Montamos todo el directorio raíz del proyecto dentro de /app contenedor
+    environment:
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_USERNAME: admin
+      MONGO_PASSWORD: password
+      MONGO_DB: bank_db
+      MONGO_COLLECTION: clientes_lsh
+    depends_on:
+      - mongodb
+    networks:
+      - datadriven
 
 volumes:
   mongodb_data:
