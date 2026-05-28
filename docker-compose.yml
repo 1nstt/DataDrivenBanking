@@ -41,7 +41,7 @@ services:
       MONGO_USERNAME: admin
       MONGO_PASSWORD: password
       MONGO_DB: bank_db
-      MONGO_COLLECTION: transactions
+      MONGO_COLLECTION: solicitudes
     depends_on:
       - mongodb
     networks:
