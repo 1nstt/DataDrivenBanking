@@ -3,7 +3,8 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Instalar dependencias
-RUN pip install --no-cache-dir pandas numpy scikit-learn pymongo
+RUN apt-get update && apt-get install -y default-jre && \
+    pip install --no-cache-dir pandas numpy scikit-learn pymongo pyspark
 
 # Copiar archivos necesarios
 COPY lsh2.py .

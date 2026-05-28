@@ -3,6 +3,8 @@ import numpy as np
 import os
 import json
 import time
+import uuid
+from datetime import datetime
 from pymongo import MongoClient, errors
 
 # =========================================================
@@ -28,10 +30,10 @@ def conectar_mongodb_con_reintentos():
             return cliente
         except errors.ConnectionFailure:
             if intento < max_intentos:
-                print("⏳ MongoDB aún no está listo. Reintentando en 3 segundos...\n")
+                print("MongoDB aún no está listo. Reintentando en 3 segundos...\n")
                 time.sleep(3)
             else:
-                print("❌ Error crítico: Se agotaron los intentos de conexión a MongoDB.")
+                print("Error crítico: Se agotaron los intentos de conexión a MongoDB.")
                 exit(1)
 
 client = conectar_mongodb_con_reintentos()
@@ -63,35 +65,67 @@ def evaluar_cliente(nuevo_cliente_df, mean, scale, R):
     print("[+] Consultando historial en MongoDB...")
     resultados = list(collection.aggregate(pipeline))
     
+    id_solicitud = str(uuid.uuid4())
+    resultado_evaluacion = {
+        "id_solicitud": id_solicitud,
+        "fecha": datetime.now().isoformat(),
+        "datos_cliente": nuevo_cliente_df.to_dict(orient="records")[0],
+        "firma_lsh": firma_lsh
+    }
+    
     if not resultados:
         print("\n--- REPORTE DE RIESGO ---")
         print("El cliente pertenece a un balde nuevo sin historial.")
         print("Riesgo desconocido. -> DECISIÓN AUTOMÁTICA: REVISIÓN MANUAL")
-        return
-        
-    stats = resultados[0]
-    total = stats['total_clientes']
-    fraudes = stats['fraudes_detectados']
-    porcentaje_fraude = (fraudes / total) * 100 if total > 0 else 0
-    
-    # 4. Mostrar Reporte y Tomar Decisión
-    print("\n--- REPORTE DE RIESGO DEL MOTOR ---")
-    print(f"Bucket LSH (Firma)                  : {firma_lsh}")
-    print(f"Total clientes guardados en el balde  : {total}")
-    print(f"Casos de Fraude histórico en balde    : {fraudes}")
-    print(f"Probabilidad de Fraude inferida       : {porcentaje_fraude:.2f}%")
-    
-    print("\n[+] EJECUCIÓN DE REGLAS LOW-CODE:")
-    if porcentaje_fraude >= 15.0:
-        print("-> ACCIÓN AUTOMÁTICA: 🔴 ALERTA ROJA (Rechazar Solicitud / Bloquear)")
-    elif porcentaje_fraude >= 2.0:
-        print("-> ACCIÓN AUTOMÁTICA: 🟡 ALERTA AMARILLA (Pasar a revisión manual exhaustiva)")
+        resultado_evaluacion["decision"] = "REVISION"
+        resultado_evaluacion["razon"] = "Balde sin historial. Riesgo desconocido."
+        resultado_evaluacion["probabilidad_fraude"] = "Desconocida"
     else:
-        print("-> ACCIÓN AUTOMÁTICA: 🟢 ALERTA VERDE (Aprobar Solicitud)")
+        stats = resultados[0]
+        total = stats['total_clientes']
+        fraudes = stats['fraudes_detectados']
+        porcentaje_fraude = (fraudes / total) * 100 if total > 0 else 0
+        
+        # 4. Mostrar Reporte y Tomar Decisión
+        print("\n--- REPORTE DE RIESGO DEL MOTOR ---")
+        print(f"Bucket LSH (Firma)                  : {firma_lsh}")
+        print(f"Total clientes guardados en el balde  : {total}")
+        print(f"Casos de Fraude histórico en balde    : {fraudes}")
+        print(f"Probabilidad de Fraude inferida       : {porcentaje_fraude:.2f}%")
+        
+        resultado_evaluacion["historial"] = {
+            "total_balde": total,
+            "fraudes_balde": fraudes,
+            "probabilidad_fraude": f"{porcentaje_fraude:.2f}%"
+        }
+        
+        print("\n[+] EJECUCIÓN DE REGLAS LOW-CODE:")
+        if porcentaje_fraude >= 15.0:
+            print("-> ACCIÓN AUTOMÁTICA: ALERTA ROJA (Rechazar Solicitud / Bloquear)")
+            resultado_evaluacion["decision"] = "RECHAZADA"
+            resultado_evaluacion["razon"] = f"Alta probabilidad de fraude ({porcentaje_fraude:.2f}%) en su segmento."
+        elif porcentaje_fraude >= 2.0:
+            print("-> ACCIÓN AUTOMÁTICA: ALERTA AMARILLA (Pasar a revisión manual exhaustiva)")
+            resultado_evaluacion["decision"] = "REVISION_EXHAUSTIVA"
+            resultado_evaluacion["razon"] = f"Riesgo moderado de fraude detectado ({porcentaje_fraude:.2f}%)."
+        else:
+            print("-> ACCIÓN AUTOMÁTICA: ALERTA VERDE (Aprobar Solicitud)")
+            resultado_evaluacion["decision"] = "APROBADA"
+            resultado_evaluacion["razon"] = f"Bajo riesgo de fraude ({porcentaje_fraude:.2f}%). Comportamiento confiable."
+
+    # 5. Guardar la evaluación en un archivo JSON en disco
+    directorio_salida = os.path.join(os.path.dirname(os.path.abspath(__file__)), "evaluaciones")
+    os.makedirs(directorio_salida, exist_ok=True)
+    ruta_archivo_salida = os.path.join(directorio_salida, f"solicitud_{id_solicitud}.json")
+    
+    with open(ruta_archivo_salida, "w", encoding="utf-8") as f:
+        json.dump(resultado_evaluacion, f, indent=4, ensure_ascii=False)
+        
+    print(f"\n[+] -> El reporte detallado de esta solicitud se guardó en: {ruta_archivo_salida}")
 
 if __name__ == "__main__":
-    # Ruta del modelo guardado por golden-to-service/lsh2.py en formato JSON
-    ruta_modelo = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'golden-to-service', 'lsh_params.json')
+    # Ruta del modelo guardado por 2-pyspark_plata/lsh2.py en formato JSON
+    ruta_modelo = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '2-pyspark_plata', 'lsh_params.json')
     
     try:
         print("Cargando parámetros LSH desde JSON (Media, Escala y Matriz R)...")
@@ -106,14 +140,14 @@ if __name__ == "__main__":
         exit(1)
 
     # DATOS DE PRUEBA: 1 Solo Cliente
-    # Vamos a simular un cliente con características atípicas (Parecido a los estafadores generados en lsh2.py)
+    # Vamos a probar con un cliente idéntico a uno real de nuestro Top 1 Peor Balde
     print("Creando solicitud de un nuevo cliente...")
     cliente_nuevo = pd.DataFrame([{
-        'ingreso_mensual': 820.0,
-        'score_crediticio': 405.0,
-        'monto_solicitado': 14900.0,
+        'ingreso_mensual': 779.1237243732694,
+        'score_crediticio': 381.75590408337064,
+        'monto_solicitado': 14674.103725124027,
         'antiguedad_laboral_meses': 0,
-        'deuda_actual': 5100.0
+        'deuda_actual': 5040.248954327027
     }])
     
     print("\nDatos de la solicitud:")

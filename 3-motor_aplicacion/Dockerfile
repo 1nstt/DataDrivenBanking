@@ -7,8 +7,8 @@ WORKDIR /app
 # (Se hace antes de copiar el código para aprovechar el caché de Docker)
 RUN pip install --no-cache-dir pandas numpy pymongo
 
-# Como el motor necesita leer el JSON de 'golden-to-service', 
-# lo ideal es que en tu docker-compose montes el directorio principal en /app,
-# pero si quieres empaquetarlo suelto, su punto de entrada será el main.py
-WORKDIR /app/Motor
-CMD ["python", "main.py"]
+# Como el motor necesita leer el JSON, 
+# el docker-compose monta el directorio principal en /app.
+# El punto de entrada será el main.py dentro de su nueva carpeta
+WORKDIR /app
+CMD ["python", "3-motor_aplicacion/main.py"]
