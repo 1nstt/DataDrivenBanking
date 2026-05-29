@@ -7,6 +7,7 @@ from pyspark.sql.functions import col, sum as spark_sum, count, desc, udf
 from pyspark.ml.feature import VectorAssembler, StandardScaler
 from pyspark.sql.types import StringType
 from pymongo import MongoClient
+from pyspark.errors.exceptions.captured import AnalysisException
 
 def main():
     print("Iniciando sesión de Spark para la capa de Plata...")
@@ -21,9 +22,24 @@ def main():
     start_time = time.time()
     csv_path = "hdfs://namenode:9000/capa-bronce/clientes_bronce.csv"
     print(f"Leyendo capa Bronce (Hadoop HDFS) desde: {csv_path}")
-    
-    # Asume que el archivo ya está en HDFS
-    df = spark.read.csv(csv_path, header=True, inferSchema=True)
+
+    # Espera un poco a que el archivo aparezca en HDFS si la subida aún no terminó.
+    df = None
+    ultimo_error = None
+    for intento in range(1, 11):
+        try:
+            df = spark.read.csv(csv_path, header=True, inferSchema=True)
+            break
+        except AnalysisException as e:
+            ultimo_error = e
+            print(f"[!] No se encontró el CSV en HDFS (intento {intento}/10). Reintentando en 5 segundos...")
+            time.sleep(5)
+
+    if df is None:
+        raise RuntimeError(
+            f"No fue posible leer '{csv_path}' después de varios intentos. "
+            f"Verifica que upload_to_hdfs haya subido el archivo correctamente. Error original: {ultimo_error}"
+        )
     
     # =========================================================
     # FASE 2: PREPROCESAMIENTO Y LSH CON PYSPARK (CAPA PLATA)

@@ -46,22 +46,16 @@ services:
     image: bde2020/hadoop-base:2.0.0-hadoop3.2.1-java8
     container_name: upload_to_hdfs
     volumes:
-      - ./1-generar_data_bronce/clientes_bronce.csv:/tmp/clientes_bronce.csv
+      - .:/app
     environment:
       - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
     depends_on:
       - namenode
       - datanode
       - generar_bronce
-    command: >
-      bash -c "
-      echo 'Esperando a que HDFS inicie...';
-      while ! hdfs dfs -ls / > /dev/null 2>&1; do sleep 3; done;
-      echo 'HDFS listo! Subiendo csv de capa bronce...';
-      hdfs dfs -mkdir -p /capa-bronce;
-      hdfs dfs -put -f /tmp/clientes_bronce.csv /capa-bronce/;
-      echo 'Archivo subido a HDFS exitosamente.';
-      "
+    command:
+      - bash
+      - /app/1-generar_data_bronce/upload_to_hdfs.sh
     networks:
       - datadriven
 
@@ -69,10 +63,15 @@ services:
     build:
       context: ./2-pyspark_plata
       dockerfile: Dockerfile
+    user: "0:0"
     container_name: pyspark_plata
     volumes:
       - ./2-pyspark_plata:/app
     environment:
+      HADOOP_USER_NAME: root
+      USER: root
+      LOGNAME: root
+      JAVA_TOOL_OPTIONS: -Duser.name=root
       MONGO_HOST: mongodb
       MONGO_PORT: 27017
       MONGO_USERNAME: admin
@@ -131,9 +130,14 @@ services:
       MONGO_DB: bank_db
       MONGO_COLLECTION: solicitudes
     depends_on:
-      - mongodb
-      - generar_bronce
-      - pyspark-job
+      mongodb:
+        condition: service_started
+      generar_bronce:
+        condition: service_completed_successfully
+      upload_to_hdfs:
+        condition: service_completed_successfully
+      pyspark-job:
+        condition: service_completed_successfully
     networks:
       - datadriven
 

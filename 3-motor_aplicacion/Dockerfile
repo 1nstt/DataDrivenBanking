@@ -7,6 +7,9 @@ WORKDIR /app
 # (Se hace antes de copiar el código para aprovechar el caché de Docker)
 RUN pip install --no-cache-dir pandas numpy pymongo
 
+# Ejecutar como el usuario del host para que las evaluaciones queden editables/borrables
+USER 1000:1000
+
 # Como el motor necesita leer el JSON, 
 # el docker-compose monta el directorio principal en /app.
 # El punto de entrada será el main.py dentro de su nueva carpeta

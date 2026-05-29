@@ -63,7 +63,14 @@ def evaluar_cliente(nuevo_cliente_df, mean, scale, R):
     ]
     
     print("[+] Consultando historial en MongoDB...")
-    resultados = list(collection.aggregate(pipeline))
+    resultados = []
+    for intento in range(1, 11):
+        resultados = list(collection.aggregate(pipeline))
+        if resultados:
+            break
+        if intento < 10:
+            print(f"[!] Sin historial todavía para esta firma. Reintentando consulta ({intento}/10)...")
+            time.sleep(3)
     
     id_solicitud = str(uuid.uuid4())
     resultado_evaluacion = {
