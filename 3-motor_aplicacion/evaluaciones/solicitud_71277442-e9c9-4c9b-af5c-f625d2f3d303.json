@@ -1,0 +1,19 @@
+{
+    "id_solicitud": "71277442-e9c9-4c9b-af5c-f625d2f3d303",
+    "fecha": "2026-05-29T01:50:00.234681",
+    "datos_cliente": {
+        "ingreso_mensual": 779.1237243732694,
+        "score_crediticio": 500.75590408337064,
+        "monto_solicitado": 14674.103725124027,
+        "antiguedad_laboral_meses": 0,
+        "deuda_actual": 5040.248954327027
+    },
+    "firma_lsh": "0111111000011100",
+    "historial": {
+        "total_balde": 1669,
+        "fraudes_balde": 720,
+        "probabilidad_fraude": "43.14%"
+    },
+    "decision": "REVISION_EXHAUSTIVA",
+    "razon": "Riesgo moderado de fraude detectado (43.14%)."
+}

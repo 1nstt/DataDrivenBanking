@@ -107,7 +107,7 @@ def evaluar_cliente(nuevo_cliente_df, mean, scale, R):
         }
         
         print("\n[+] EJECUCIÓN DE REGLAS LOW-CODE:")
-        if porcentaje_fraude >= 15.0:
+        if porcentaje_fraude >= 50.0:
             print("-> ACCIÓN AUTOMÁTICA: ALERTA ROJA (Rechazar Solicitud / Bloquear)")
             resultado_evaluacion["decision"] = "RECHAZADA"
             resultado_evaluacion["razon"] = f"Alta probabilidad de fraude ({porcentaje_fraude:.2f}%) en su segmento."
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     print("Creando solicitud de un nuevo cliente...")
     cliente_nuevo = pd.DataFrame([{
         'ingreso_mensual': 779.1237243732694,
-        'score_crediticio': 381.75590408337064,
+        'score_crediticio': 500.75590408337064,
         'monto_solicitado': 14674.103725124027,
         'antiguedad_laboral_meses': 0,
         'deuda_actual': 5040.248954327027
