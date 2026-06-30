@@ -168,6 +168,24 @@ services:
     networks:
       - datadriven
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      ENGINE_API_URL: http://api_motor_nuevo:8000
+      NEXT_PUBLIC_ENGINE_API_URL: /api/engine
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - api_motor_nuevo
+    networks:
+      - datadriven
+
 volumes:
   mongodb_data:
 
