@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   generar_bronce:
     build:
@@ -9,6 +11,7 @@ services:
     networks:
       - datadriven
     restart: "no"
+
   mongodb:
     image: mongo:latest
     container_name: mongodb
@@ -33,7 +36,6 @@ services:
       ME_CONFIG_MONGODB_URL: mongodb://admin:password@mongodb:27017/
       ME_CONFIG_BASICAUTH_USERNAME: admin
       ME_CONFIG_BASICAUTH_PASSWORD: password
-
     ports:
       - "8081:8081"
     depends_on:
@@ -97,7 +99,6 @@ services:
       - "9000:9000"
     environment:
       - CLUSTER_NAME=data_driven_cluster
-      # HDFS parameters:
       - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
     networks:
       - datadriven
@@ -136,6 +137,30 @@ services:
         condition: service_completed_successfully
       upload_to_hdfs:
         condition: service_completed_successfully
+      pyspark-job:
+        condition: service_completed_successfully
+    networks:
+      - datadriven
+
+  api_motor_nuevo:
+    build:
+      context: ./5-API_MOTOR
+      dockerfile: Dockerfile
+    container_name: api_motor_nuevo
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./5-API_MOTOR:/app # Mapeo clave para leer el .pkl localmente y reflejar los JSON creados
+    environment:
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_USERNAME: admin
+      MONGO_PASSWORD: password
+      MONGO_DB: bank_db
+      MONGO_COLLECTION: solicitudes
+    depends_on:
+      mongodb:
+        condition: service_started
       pyspark-job:
         condition: service_completed_successfully
     networks:

@@ -1,0 +1,19 @@
+{
+    "solicitud": {
+        "ingreso_mensual": 779.1237243732694,
+        "score_crediticio": 500.75590408337064,
+        "monto_solicitado": 14674.103725124027,
+        "antiguedad_laboral_meses": 0,
+        "deuda_actual": 5040.248954327027
+    },
+    "etiquetas": {
+        "ratio_endeudamiento_actual": 6.47,
+        "capacidad_pago": "Sobreendeudado",
+        "estabilidad_laboral": "Inestable",
+        "score_estabilidad_financiera": "Critico",
+        "decision_preliminar": "Mal prospecto",
+        "prediccion_xgboost%riesgo": "100%"
+    },
+    "flujo_estado": "p0_completado",
+    "_id": "6a4347cbe0ef48560ca367e9"
+}
