@@ -1,4 +1,4 @@
-const DEFAULT_BASE_URL = "http://localhost:8000"
+const DEFAULT_BASE_URL = "/api/engine"
 
 export function getEngineApiBaseUrl() {
   return process.env.NEXT_PUBLIC_ENGINE_API_URL || DEFAULT_BASE_URL

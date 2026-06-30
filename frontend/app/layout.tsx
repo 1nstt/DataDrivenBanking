@@ -8,8 +8,8 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Flow Builder - Visual Decision Engine",
-  description: "Build and execute decision flows visually",
+  title: "Banco Digital | Solicitud de Crédito",
+  description: "Formulario bancario para enviar solicitudes de clientes al motor de flujos",
   generator: "v0.app",
   icons: {
     icon: [
@@ -36,7 +36,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="es">
       <body className={`font-sans antialiased ${_geist.className}`}>
         {children}
         <Analytics />
