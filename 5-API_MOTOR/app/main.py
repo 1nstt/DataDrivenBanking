@@ -81,14 +81,14 @@ async def evaluar_p0(payload: SolicitudWrapper):
         output_dir = os.path.join(os.getcwd(), "output")
         os.makedirs(output_dir, exist_ok=True)
         
-        file_path = os.path.join(output_dir, f"solicitud_{documento_final['_id']}.json")
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(documento_final, f, indent=4, ensure_ascii=False)
+        #file_path = os.path.join(output_dir, f"solicitud_{documento_final['_id']}.json")
+        #with open(file_path, "w", encoding="utf-8") as f:
+        #    json.dump(documento_final, f, indent=4, ensure_ascii=False)
         
         return {
             "status": "success",
             "fase_actual": "p0",
-            "archivo_guardado": f"output/solicitud_{documento_final['_id']}.json",
+        #    "archivo_guardado": f"output/solicitud_{documento_final['_id']}.json",
             "documento": documento_final
         }
         
