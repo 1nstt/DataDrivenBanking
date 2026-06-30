@@ -29,7 +29,7 @@ async def health_check():
 
 
 @app.get("/solicitudes", status_code=status.HTTP_200_OK)
-async def listar_solicitudes(limit: int = 50):
+async def listar_solicitudes(limit: int = 10000):
     try:
         collection = get_collection(COLLECTION_NAME)
         resultados = []
