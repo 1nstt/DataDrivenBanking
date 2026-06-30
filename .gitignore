@@ -35,3 +35,14 @@ build/
 
 # CSV files (datasets)
 *.csv
+
+# ==========================================
+# 5-API_MOTOR - Local Data & Models
+# ==========================================
+# Ignorar la carpeta con los 10.000 clientes generados
+**/clientes_historicos/
+
+# Ignorar los JSON resultantes procesados por la API
+**/output/
+
+# Ignorar archivos binarios de modelos serializados (XGBoost .pkl)
