@@ -11,21 +11,27 @@ import { fetchEngineJson } from "../lib/engine-api"
 type RequestState = "idle" | "loading" | "success" | "error"
 
 interface CreditRequestResponse {
-  flow_name?: string
-  solicitud?: {
-    decision?: {
-      final_decision_code?: string
-      blocking_rule_codes?: string[]
-      required_action_codes?: string[]
+  status?: string
+  fase_actual?: string
+  archivo_guardado?: string
+  documento?: {
+    solicitud?: {
+      ingreso_mensual?: number
+      score_crediticio?: number
+      monto_solicitado?: number
+      antiguedad_laboral_meses?: number
+      deuda_actual?: number
     }
-    observations?: Array<{
-      fn_name: string
-      message: string
-      value?: unknown
-    }>
-    audit?: {
-      evaluated_at?: string
+    etiquetas?: {
+      ratio_endeudamiento_actual?: number
+      capacidad_pago?: string
+      estabilidad_laboral?: string
+      score_estabilidad_financiera?: string
+      decision_preliminar?: string
+      prediccion_xgboost?: string
     }
+    resultado_final?: string
+    flujo_estado?: string
   }
 }
 
@@ -37,13 +43,12 @@ interface RecommendedProduct {
 
 function formatDecisionLabel(code?: string) {
   switch (code) {
-    case "APPROVED":
+    case "APROBADO":
       return "Aprobada"
-    case "REJECTED":
+    case "RECHAZADO":
       return "Rechazada"
-    case "REQUIRE_ACTION":
-      return "Requiere acción"
-    case "PENDING":
+    case "ERROR_EVALUACION":
+      return "Error de evaluación"
     default:
       return "Pendiente"
   }
@@ -51,11 +56,11 @@ function formatDecisionLabel(code?: string) {
 
 function getDecisionStyles(code?: string) {
   switch (code) {
-    case "APPROVED":
+    case "APROBADO":
       return "border-emerald-400/20 bg-emerald-400/10 text-emerald-100"
-    case "REJECTED":
+    case "RECHAZADO":
       return "border-rose-400/20 bg-rose-400/10 text-rose-100"
-    case "REQUIRE_ACTION":
+    case "ERROR_EVALUACION":
       return "border-amber-400/20 bg-amber-400/10 text-amber-100"
     default:
       return "border-slate-400/20 bg-slate-400/10 text-slate-100"
@@ -64,7 +69,7 @@ function getDecisionStyles(code?: string) {
 
 function getRecommendedProducts(code?: string): RecommendedProduct[] {
   switch (code) {
-    case "APPROVED":
+    case "APROBADO":
       return [
         {
           name: "Crédito de consumo",
@@ -77,7 +82,7 @@ function getRecommendedProducts(code?: string): RecommendedProduct[] {
           tag: "Cross-sell",
         },
       ]
-    case "REJECTED":
+    case "RECHAZADO":
       return [
         {
           name: "Cuenta digital básica",
@@ -90,7 +95,7 @@ function getRecommendedProducts(code?: string): RecommendedProduct[] {
           tag: "Recuperación",
         },
       ]
-    case "REQUIRE_ACTION":
+    case "ERROR_EVALUACION":
       return [
         {
           name: "Revisión manual del ejecutivo",
@@ -116,17 +121,17 @@ function getRecommendedProducts(code?: string): RecommendedProduct[] {
 
 function getModelRecommendation(code?: string) {
   switch (code) {
-    case "APPROVED":
+    case "APROBADO":
       return {
         label: "Confiable",
         recommendation: "Aprobar solicitud. Cliente de bajo riesgo.",
       }
-    case "REJECTED":
+    case "RECHAZADO":
       return {
         label: "Moroso",
         recommendation: "Rechazar solicitud. Alto riesgo de no pago.",
       }
-    case "REQUIRE_ACTION":
+    case "ERROR_EVALUACION":
       return {
         label: "Comportamiento crediticio variable",
         recommendation: "Revisar manualmente. Considerar garantías adicionales.",
@@ -148,9 +153,9 @@ const initialForm = {
   deuda_actual: "",
 }
 
-const amountFormatter = new Intl.NumberFormat("es-ES", {
+const amountFormatter = new Intl.NumberFormat("es-CL", {
   style: "currency",
-  currency: "USD",
+  currency: "CLP",
   maximumFractionDigits: 0,
 })
 
@@ -182,12 +187,10 @@ export function CreditRequestForm() {
     }
   }, [form.deuda_actual, form.ingreso_mensual, form.monto_solicitado])
 
-  const decisionCode = response?.solicitud?.decision?.final_decision_code
+  const decisionCode = response?.documento?.resultado_final
   const decisionLabel = formatDecisionLabel(decisionCode)
   const decisionStyles = getDecisionStyles(decisionCode)
-  const blockingRules = response?.solicitud?.decision?.blocking_rule_codes || []
-  const requiredActions = response?.solicitud?.decision?.required_action_codes || []
-  const latestObservation = response?.solicitud?.observations?.at(-1)
+  const etiquetas = response?.documento?.etiquetas
   const recommendedProducts = getRecommendedProducts(decisionCode)
   const modelRecommendation = getModelRecommendation(decisionCode)
 
@@ -224,55 +227,34 @@ export function CreditRequestForm() {
     try {
       const payload = {
         solicitud: {
-          id: `req-${Date.now()}`,
-          context: {
-            property_id: form.flujoId.trim(),
-            monthly_rent: deuda,
-            currency: "CLP",
-          },
-          applicants: [
-            {
-              id: "app-1",
-              role: "TITULAR",
-              income_source: {
-                type: "DEPENDENT",
-                dependent: {
-                  payslips: Array.from({ length: 6 }, (_, index) => ({
-                    month_index: index + 1,
-                    net_income: ingreso,
-                    period: `M${index + 1}`,
-                    gross_income: ingreso,
-                  })),
-                },
-              },
-              identity: {
-                full_name: "Cliente",
-                document_type: "RUT",
-              },
-              commercial_data: {
-                dicom: {
-                  is_hard_debt: score < 600,
-                  score,
-                },
-                estimated_monthly_debt_payment: deuda,
-              },
-            },
-          ],
+          ingreso_mensual: ingreso,
+          score_crediticio: score,
+          monto_solicitado: monto,
+          antiguedad_laboral_meses: antiguedad,
+          deuda_actual: deuda,
         },
-        flow_name: "p0",
       }
 
-      const result = await fetchEngineJson<CreditRequestResponse>(`/execute`, {
+      const result = await fetchEngineJson<CreditRequestResponse>(`/evaluar_p0`, {
         method: "POST",
         body: JSON.stringify(payload),
       })
 
       setResponse(result)
       setState("success")
-      setMessage("Solicitud enviada correctamente al flujo seleccionado.")
+      setMessage("Solicitud enviada correctamente al flujo p0.")
     } catch (error) {
       setState("error")
-      setMessage(error instanceof Error ? error.message : "No se pudo enviar la solicitud.")
+      const errorMessage = error instanceof Error ? error.message : "No se pudo enviar la solicitud."
+
+      if (errorMessage.includes("Not Found")) {
+        setMessage(
+          "El backend activo no expone /evaluar_p0. Levanta el motor 5-API_MOTOR en el puerto 8000 para que el formulario funcione.",
+        )
+        return
+      }
+
+      setMessage(errorMessage)
     }
   }
 
@@ -302,7 +284,7 @@ export function CreditRequestForm() {
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3">
               <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Canal</p>
-              <p className="mt-1 text-sm font-medium text-white">POST /execute</p>
+              <p className="mt-1 text-sm font-medium text-white">POST /evaluar_p0</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3">
               <p className="text-xs uppercase tracking-[0.22em] text-slate-400">Estado</p>
@@ -480,55 +462,41 @@ export function CreditRequestForm() {
                         {decisionCode || "PENDING"}
                       </div>
                     </div>
-                  </div>
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                      <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Flujo</p>
-                      <p className="mt-1 text-sm font-medium text-white">{response.flow_name || "p0"}</p>
-                    </div>
-                    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                      <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Evaluado</p>
-                      <p className="mt-1 text-sm font-medium text-white">{response.solicitud?.audit?.evaluated_at || "-"}</p>
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Observación reciente</p>
-                    <p className="mt-1 text-sm text-slate-200">
-                      {latestObservation ? latestObservation.message : "Sin observaciones registradas."}
+                    <p className="mt-3 text-sm opacity-90">
+                      {response.status || "success"} · {response.fase_actual || response.documento?.flujo_estado || "p0"}
                     </p>
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                      <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Reglas bloqueantes</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {blockingRules.length > 0 ? (
-                          blockingRules.map((rule) => (
-                            <span key={rule} className="rounded-full border border-rose-400/20 bg-rose-400/10 px-3 py-1 text-xs text-rose-100">
-                              {rule}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-sm text-slate-300">Ninguna</span>
-                        )}
-                      </div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Archivo guardado</p>
+                      <p className="mt-1 text-sm font-medium text-white">{response.archivo_guardado || "-"}</p>
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+                      <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Etiqueta preliminar</p>
+                      <p className="mt-1 text-sm font-medium text-white">{etiquetas?.decision_preliminar || "-"}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+                      <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Capacidad de pago</p>
+                      <p className="mt-1 text-sm font-medium text-white">{etiquetas?.capacidad_pago || "-"}</p>
                     </div>
 
                     <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
-                      <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Acciones requeridas</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {requiredActions.length > 0 ? (
-                          requiredActions.map((action) => (
-                            <span key={action} className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs text-amber-100">
-                              {action}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="text-sm text-slate-300">Ninguna</span>
-                        )}
-                      </div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Estabilidad laboral</p>
+                      <p className="mt-1 text-sm font-medium text-white">{etiquetas?.estabilidad_laboral || "-"}</p>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+                      <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Score estabilidad financiera</p>
+                      <p className="mt-1 text-sm font-medium text-white">{etiquetas?.score_estabilidad_financiera || "-"}</p>
+                    </div>
+
+                    <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4">
+                      <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Riesgo XGBoost</p>
+                      <p className="mt-1 text-sm font-medium text-white">{etiquetas?.prediccion_xgboost || "-"}</p>
                     </div>
                   </div>
 
