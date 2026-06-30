@@ -3,11 +3,12 @@
 Repositorio proyecto Data Driven Banking.
 
 ## Integrantes
+
 - Renato Yañez
 - Maximiliano Juarez
 - Rafael Encina
 - Benjamin Polanco
-- Camilo Rios
+- Camilo Rios.
 - Dante Hortuvia
 
 ## Instalación y Uso
@@ -19,6 +20,7 @@ docker-compose up
 ```
 
 Esto levantará:
+
 - **MongoDB** en puerto `27017`
 - **MongoExpress** en puerto `8081` (interfaz visual para MongoDB)
 - **Golden-to-service** (carga automática de datos)
@@ -35,6 +37,7 @@ python3 move_20pct_to_clientes.py --percentage 0.01 --seed 42
 ```
 
 Esto:
+
 - Extrae el 1% del dataset de `Variant III.csv`
 - Guarda esos registros en `../clientes/clientes.csv`
 - Elimina esos registros del archivo original
