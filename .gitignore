@@ -36,6 +36,8 @@ build/
 # CSV files (datasets)
 *.csv
 
+**/node_modules/
+
 # ==========================================
 # 5-API_MOTOR - Local Data & Models
 # ==========================================
