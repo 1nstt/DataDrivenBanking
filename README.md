@@ -46,4 +46,6 @@ Esto:
 
 **Importante**: Cada vez que se inicia `docker-compose up` con el servicio `golden-to-service` activo, los datos se cargarán nuevamente en MongoDB. Esto puede resultar en duplicados. Si quieres evitar esto, comenta o deshabilita el servicio en el `docker-compose.yml`.
 
+Para hacer la prueba de replicacion, se debe levantar el docker compose con el flag --scale datanode=6 para que hayan 6 nodos arriba, luego con docker ps se puede ver el id de los contenedores de los datanode y hacerles stop, finalmente en el namenode se va a demorar 630 segundos end etectar los nodos como caidos para realizar la replicacion a los otros nodos (esta configurado con factor de replicacion 3 por lo que se tienen que caer 3 nodos para que haya recien la probabilidad de haber perdido informacion, si se caen 2 va a haber si o si un tercer nodo que tenga cada uno de los bloques de los 2 nodos que se cayeron)
+
 :3
