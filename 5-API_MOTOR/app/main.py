@@ -6,9 +6,10 @@ from app.database import get_collection
 # --- Importaciones de tus módulos de lógica e inferencia ---
 from app.etiquetas import SolicitudWrapper, evaluar_y_etiquetar
 from app.xgboost import predecir_etiqueta_xgb
-from app.is_aprobado import evaluar_aprobacion  # 👈 Nuevo import integrado
+from app.is_aprobado import evaluar_aprobacion 
 
-COLLECTION_NAME = os.getenv("MONGO_COLLECTION", "solicitudes")
+
+COLLECTION_NAME = "historial_solicitudes_p0"
 
 app = FastAPI(
     title="API Motor - Evaluación de Solicitudes",
@@ -22,7 +23,8 @@ async def health_check():
     return {
         "status": "online",
         "modulo": "5-API_MOTOR",
-        "database_target": os.getenv("MONGO_DB", "bank_db")
+        "database_target": os.getenv("MONGO_DB", "bank_db"),
+        "collection_target": COLLECTION_NAME
     }
 
 
@@ -60,19 +62,18 @@ async def evaluar_p0(payload: SolicitudWrapper):
         resultado_etiquetas["prediccion_xgboost"] = etiqueta_ml
         
         # --- FASE 4: Decisión Final del Negocio ---
-        # Evaluamos el string de porcentaje generado por el paso de XGBoost
         decision_final = evaluar_aprobacion(etiqueta_ml)
         
         # --- FASE 5: Consolidación del Documento ---
-        # Añadimos 'resultado_final' en la raíz tal como pediste
         documento_final = {
             "solicitud": datos_solicitud.model_dump(),
             "etiquetas": resultado_etiquetas,
-            "resultado_final": decision_final,  # 👈 Inyectado en la raíz
+            "resultado_final": decision_final,
             "flujo_estado": "p0_completado"
         }
         
         # --- FASE 6: Persistencia en la Base de Datos ---
+        # Levantará dinámicamente 'historial_solicitudes_p0' a través de database.py
         collection = get_collection(COLLECTION_NAME)
         insert_result = await collection.insert_one(documento_final)
         documento_final["_id"] = str(insert_result.inserted_id)
