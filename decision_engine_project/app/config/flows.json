@@ -1,0 +1,191 @@
+{
+  "flows": {
+    "p0": {
+      "flow_name": "p0",
+      "display_name": "P0",
+      "description": "Flujo base de evaluación rápida inicial.",
+      "entryNodeId": "n1",
+      "nodes": [
+        {
+          "id": "n1",
+          "type": "function",
+          "data": {
+            "functionName": "fn_calcular_promedio_renta",
+            "status": "idle"
+          }
+        },
+        {
+          "id": "n2",
+          "type": "decision",
+          "data": {
+            "condition": "titular and titular.calculated_metrics.income.avg_6m > 0",
+            "status": "idle"
+          }
+        },
+        {
+          "id": "n3",
+          "type": "function",
+          "data": {
+            "functionName": "rl_check_dicom",
+            "status": "idle"
+          }
+        },
+        {
+          "id": "n4",
+          "type": "function",
+          "data": {
+            "functionName": "rl_renta_minima",
+            "status": "idle"
+          }
+        },
+        {
+          "id": "n5",
+          "type": "function",
+          "data": {
+            "functionName": "rl_sin_ingresos",
+            "status": "idle"
+          }
+        },
+        {
+          "id": "n6",
+          "type": "function",
+          "data": {
+            "functionName": "motor.finalize_decision",
+            "status": "idle"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "id": "e1",
+          "source": "n1",
+          "target": "n2"
+        },
+        {
+          "id": "e2",
+          "source": "n2",
+          "target": "n3",
+          "sourceHandle": "true"
+        },
+        {
+          "id": "e3",
+          "source": "n2",
+          "target": "n5",
+          "sourceHandle": "false"
+        },
+        {
+          "id": "e4",
+          "source": "n3",
+          "target": "n4"
+        },
+        {
+          "id": "e5",
+          "source": "n4",
+          "target": "n6"
+        },
+        {
+          "id": "e6",
+          "source": "n5",
+          "target": "n6"
+        }
+      ]
+    },
+    "flow-6": {
+      "display_name": "flow-6",
+      "description": "Saved flow flow-6",
+      "entryNodeId": "function-1782779032344",
+      "nodes": [
+        {
+          "id": "function-1782779032344",
+          "type": "function",
+          "position": {
+            "x": 100,
+            "y": 300
+          },
+          "data": {
+            "functionName": "fn_calcular_promedio_renta",
+            "status": "idle"
+          },
+          "measured": {
+            "width": 222,
+            "height": 84
+          }
+        },
+        {
+          "id": "function-1782779040297",
+          "type": "function",
+          "position": {
+            "x": 440,
+            "y": 300
+          },
+          "data": {
+            "functionName": "rl_renta_minima",
+            "status": "idle"
+          },
+          "measured": {
+            "width": 200,
+            "height": 84
+          }
+        },
+        {
+          "id": "function-1782779046309",
+          "type": "function",
+          "position": {
+            "x": 780,
+            "y": 300
+          },
+          "data": {
+            "functionName": "motor.finalize_decision",
+            "status": "idle"
+          },
+          "measured": {
+            "width": 200,
+            "height": 84
+          }
+        }
+      ],
+      "edges": [
+        {
+          "type": "orthogonal",
+          "markerEnd": {
+            "type": "arrowclosed",
+            "width": 16,
+            "height": 16,
+            "color": "#64748b"
+          },
+          "source": "function-1782779032344",
+          "target": "function-1782779040297",
+          "id": "edge-function-1782779032344-function-1782779040297-1782779042735",
+          "data": {
+            "color": "#64748b"
+          },
+          "style": {
+            "stroke": "#64748b"
+          }
+        },
+        {
+          "type": "orthogonal",
+          "markerEnd": {
+            "type": "arrowclosed",
+            "width": 16,
+            "height": 16,
+            "color": "#64748b"
+          },
+          "source": "function-1782779040297",
+          "target": "function-1782779046309",
+          "id": "edge-function-1782779040297-function-1782779046309-1782779048427",
+          "data": {
+            "color": "#64748b"
+          },
+          "style": {
+            "stroke": "#64748b"
+          }
+        }
+      ],
+      "metadata": {
+        "source": "frontend"
+      },
+      "flow_name": "flow-6"
+    }
+  }
+}

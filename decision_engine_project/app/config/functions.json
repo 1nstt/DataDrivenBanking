@@ -1,0 +1,53 @@
+{
+  "functions": [
+    {
+      "name": "fn_calcular_promedio_renta",
+      "label": "Calcular promedio de renta",
+      "category": "calculations",
+      "description": "Calcula el promedio de los ingresos del titular dependiente.",
+      "code": "from app.models.solicitud import SolicitudMotor\nfrom app.core.decorators import track_execution\n\n\n@track_execution\ndef fn_calcular_promedio_renta(motor: SolicitudMotor):\n    for app in motor.applicants:\n        if app.is_dependent:\n            payslips = app.income_source.dependent.payslips\n            if payslips:\n                total = sum(p.net_income for p in payslips)\n                avg = total / len(payslips)\n                app.calculated_metrics.income.avg_6m = avg\n                motor.add_observation(\"fn_calc_renta\", f\"Promedio calculado App {app.id}\", avg)\n            else:\n                app.calculated_metrics.income.avg_6m = 0.0"
+    },
+    {
+      "name": "rl_check_dicom",
+      "label": "Validar DICOM duro",
+      "category": "rulesets",
+      "description": "Rechaza la solicitud si existe deuda dura en DICOM.",
+      "code": "from app.models.solicitud import SolicitudMotor\nfrom app.core.decorators import track_execution\n\n\n@track_execution\ndef rl_check_dicom(motor: SolicitudMotor):\n    for app in motor.applicants:\n        if app.commercial_data.dicom and app.commercial_data.dicom.is_hard_debt:\n            motor.reject_request(\n                rule_code=\"RL_DICOM_HARD\",\n                reason=f\"Aplicante {app.id} tiene antecedentes comerciales bloqueantes.\",\n            )"
+    },
+    {
+      "name": "rl_renta_minima",
+      "label": "Validar renta mínima",
+      "category": "rulesets",
+      "description": "Rechaza si la renta no supera 3 veces el arriendo.",
+      "code": "from app.models.solicitud import SolicitudMotor\nfrom app.core.decorators import track_execution\n\n\n@track_execution\ndef rl_renta_minima(motor: SolicitudMotor):\n    titular = motor.titular\n    if not titular:\n        motor.reject_request(\"RL_NO_TITULAR\", \"No existe titular\")\n        return\n\n    renta = titular.calculated_metrics.income.avg_6m\n    arriendo = motor.context.monthly_rent\n    factor = 3.0\n\n    if renta < (arriendo * factor):\n        motor.reject_request(\n            rule_code=\"RL_RENTA_INSUFICIENTE\",\n            reason=f\"Renta ({renta}) inferior a {factor}x el arriendo ({arriendo})\",\n        )\n    else:\n        titular.evaluation_results.income.evaluation_code = \"APPROVED\""
+    },
+    {
+      "name": "rl_sin_ingresos",
+      "label": "Validar ingresos",
+      "category": "rulesets",
+      "description": "Rechaza si no se detectan ingresos válidos.",
+      "code": "from app.models.solicitud import SolicitudMotor\nfrom app.core.decorators import track_execution\n\n\n@track_execution\ndef rl_sin_ingresos(motor: SolicitudMotor):\n    titular = motor.titular\n    if not titular:\n        motor.reject_request(\"RL_NO_TITULAR\", \"No existe titular\")\n        return\n\n    renta = titular.calculated_metrics.income.avg_6m\n    if renta <= 0:\n        motor.reject_request(\n            rule_code=\"RL_SIN_INGRESOS\",\n            reason=\"No se detectaron ingresos válidos.\",\n        )"
+    },
+    {
+      "name": "motor.finalize_decision",
+      "label": "Finalizar decisión",
+      "category": "engine",
+      "description": "Cierra la decisión final del motor.",
+      "code": "def finalize_decision(motor):\n    motor.finalize_decision()"
+    },
+    {
+      "label": "fn_prueba",
+      "category": "calculations",
+      "description": "holaa",
+      "code": "def fn_prueba(motor):\n    pass",
+      "name": "fn_prueba"
+    },
+    {
+      "label": "fn_prueba",
+      "category": "calculations",
+      "description": "holaa",
+      "code": "def fn_prueba(motor):\n    print(\"holaa\")\n    pass",
+      "name": "fn_1782779704924"
+    }
+  ]
+}

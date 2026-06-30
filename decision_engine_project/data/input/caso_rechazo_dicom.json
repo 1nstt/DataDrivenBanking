@@ -1,0 +1,73 @@
+{
+  "solicitud": {
+    "id": "SOL-2024-B999",
+    "schema_version": "1.0.0",
+    "created_at": "2024-01-21T14:30:00Z",
+    "last_updated": "2024-01-21T14:30:00Z",
+    "context": {
+      "property_id": "PROP-CENTRO-101",
+      "monthly_rent": 400000,
+      "currency": "CLP"
+    },
+    "observations": [],
+    "applicants": [
+      {
+        "id": "APP-RIESGO-01",
+        "role": "TITULAR",
+        "identity": {
+          "full_name": "Pedro Riesgo",
+          "document_type": "RUT"
+        },
+        "income_source": {
+          "type": "DEPENDENT",
+          "dependent": {
+            "contract": {
+              "type": "PLAZO_FIJO",
+              "start_date": "2023-01-01"
+            },
+            "payslips": [
+              { "month_index": 1, "period": "2023-12", "gross_income": 2000000, "net_income": 1800000, "bonuses": 0, "deductions": 200000, "employer_rut": "88.999.444-K" },
+              { "month_index": 2, "period": "2023-11", "gross_income": 2000000, "net_income": 1800000, "bonuses": 0, "deductions": 200000, "employer_rut": "88.999.444-K" }
+            ],
+            "afp_history": []
+          }
+        },
+        "commercial_data": {
+          "dicom": {
+            "score": 200,
+            "active_debt": true,
+            "debt_category": "MOROSIDAD_GRAVE",
+            "is_hard_debt": true,
+            "protested_checks": true
+          },
+          "estimated_monthly_debt_payment": 500000
+        },
+        "documentation": {
+          "id_copy": true,
+          "income_docs_complete": true,
+          "afp_certificate_presented": false,
+          "labor_certificate_presented": false,
+          "sii_documents_complete": false
+        },
+        "qualitative_data": {
+          "family_size": 1,
+          "has_pets": 0,
+          "references_count": 0
+        },
+        "calculated_metrics": {},
+        "evaluation_results": {}
+      }
+    ],
+    "fn_history": [],
+    "decision": {
+      "final_decision_code": "PENDING",
+      "blocking_applicant_ids": [],
+      "blocking_rule_codes": [],
+      "required_action_codes": []
+    },
+    "audit": {
+      "ruleset_version": "",
+      "evaluated_at": ""
+    }
+  }
+}

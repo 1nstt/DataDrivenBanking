@@ -1,0 +1,190 @@
+{
+  "solicitud": {
+    "id": "string",
+    "schema_version": "string",
+    "created_at": "string",
+    "last_updated": "string",
+
+    "context": {
+      "property_id": "string",
+      "monthly_rent": "number",
+      "currency": "string"
+    },
+
+    "observations": [
+      {
+        "fn_name": "string",      
+        "value": "any",            
+        "message": "string"       
+      }
+    ],
+
+    "applicants": [
+      {
+        "id": "string",
+        "role": "string",
+
+        "identity": {
+          "full_name": "string",
+          "document_type": "string"
+        },
+
+        "income_source": {
+          "type": "string",
+
+          "dependent": {
+            "contract": {
+              "type": "string",
+              "start_date": "string"
+            },
+            "payslips": [
+              {
+                "month_index": "number",
+                "period": "string",
+                "gross_income": "number",
+                "net_income": "number",
+                "bonuses": "number",
+                "deductions": "number",
+                "employer_rut": "string"
+              }
+            ],
+            "afp_history": [
+              {
+                "month_index": "number",
+                "period": "string",
+                "employer_rut": "string",
+                "contribution_paid": "boolean"
+              }
+            ]
+          },
+
+          "independent": {
+            "honorariums": [
+              {
+                "month_index": "number",
+                "period": "string",
+                "amount": "number",
+                "retention": "number"
+              }
+            ],
+            "form_22_presented": "boolean",
+            "sii_tax_folder_presented": "boolean"
+          },
+
+          "company": {
+            "company_rut": "string",
+            "form_29_last_12m": [
+              {
+                "month_index": "number",
+                "amount": "number"
+              }
+            ],
+            "sii_tax_folder_presented": "boolean"
+          }
+        },
+
+        "commercial_data": {
+          "dicom": {
+            "score": "number",
+            "active_debt": "boolean",
+            "debt_category": "string",
+            "is_hard_debt": "boolean",
+            "protested_checks": "boolean"
+          },
+          "estimated_monthly_debt_payment": "number"
+        },
+
+        "documentation": {
+          "id_copy": "boolean",
+          "income_docs_complete": "boolean",
+          "afp_certificate_presented": "boolean",
+          "labor_certificate_presented": "boolean",
+          "sii_documents_complete": "boolean"
+        },
+
+        "qualitative_data": {
+          "presentation": "string",
+          "previous_landlord_comments": "string",
+          "family_size": "number",
+          "has_pets": "number",
+          "references_count": "number"
+        },
+
+        "calculated_metrics": {
+          "income": {
+            "avg_6m": "number",
+            "avg_12m": "number",
+            "min_month": "number",
+            "variability_index": "number",
+            "afp_continuity": "boolean"
+          },
+          "financial_load": {
+            "debt_to_income_ratio": "number",
+            "available_income_after_debt": "number"
+          }
+        },
+
+        "evaluation_results": {
+          "income": {
+            "evaluation_code": "string",
+            "triggered_rule_codes": ["string"]
+          },
+          "commercial": {
+            "evaluation_code": "string",
+            "triggered_rule_codes": ["string"]
+          },
+          "documentation": {
+            "evaluation_code": "string",
+            "triggered_rule_codes": ["string"]
+          },
+          "qualitative": {
+            "evaluation_code": "string",
+            "triggered_rule_codes": ["string"]
+          }
+        }
+      }
+    ],
+
+    "fn_history": [
+      {
+        "execution_id": "string",
+        "fn_name": "string",
+        "fn_version": "string",
+        "executed_at": "string",
+
+        "scope": {
+          "level": "string",
+          "target_id": "string"
+        },
+
+        "inputs": [
+          {
+            "path": "string",
+            "value_type": "string",
+            "value": "any"
+          }
+        ],
+
+        "outputs": [
+          {
+            "path": "string",
+            "value_type": "string",
+            "value": "any"
+          }
+        ]
+      }
+    ],
+
+    "decision": {
+      "final_decision_code": "string",
+      "blocking_applicant_ids": ["string"],
+      "blocking_rule_codes": ["string"],
+      "required_action_codes": ["string"]
+    },
+
+    "audit": {
+      "ruleset_version": "string",
+      "evaluated_at": "string"
+    }
+  }
+}

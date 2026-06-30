@@ -1,0 +1,171 @@
+{
+  "solicitud": {
+    "id": "SOL-2024-B999",
+    "context": {
+      "property_id": "PROP-CENTRO-101",
+      "monthly_rent": 400000,
+      "currency": "CLP"
+    },
+    "applicants": [
+      {
+        "id": "APP-RIESGO-01",
+        "role": "TITULAR",
+        "income_source": {
+          "type": "DEPENDENT",
+          "dependent": {
+            "payslips": [
+              {
+                "month_index": 1,
+                "net_income": 1800000,
+                "period": "2023-12",
+                "gross_income": 2000000
+              },
+              {
+                "month_index": 2,
+                "net_income": 1800000,
+                "period": "2023-11",
+                "gross_income": 2000000
+              }
+            ]
+          }
+        },
+        "identity": {
+          "full_name": "Pedro Riesgo",
+          "document_type": "RUT"
+        },
+        "commercial_data": {
+          "dicom": {
+            "is_hard_debt": true,
+            "score": 200
+          },
+          "estimated_monthly_debt_payment": 500000
+        },
+        "qualitative_data": {
+          "presentation": "",
+          "previous_landlord_comments": "",
+          "family_size": 1,
+          "has_pets": 0,
+          "references_count": 0
+        },
+        "calculated_metrics": {
+          "income": {
+            "avg_6m": 1800000.0
+          },
+          "financial_load": {
+            "debt_to_income_ratio": 0.0
+          }
+        },
+        "evaluation_results": {
+          "income": {
+            "evaluation_code": "APPROVED",
+            "triggered_rule_codes": []
+          }
+        }
+      }
+    ],
+    "fn_history": [
+      {
+        "execution_id": "exec-1",
+        "fn_name": "fn_calcular_promedio_renta",
+        "executed_at": "2026-06-29T21:48:10.487495",
+        "inputs": [
+          {
+            "path": "motor",
+            "value_type": "SolicitudMotor",
+            "value": "SolicitudMotor(id=SOL-2024-B999, applicants=1)"
+          }
+        ],
+        "outputs": [
+          {
+            "path": "applicants[0].calculated_metrics",
+            "value_type": "object",
+            "value": {
+              "income": {
+                "avg_6m": 1800000.0,
+                "avg_12m": 0,
+                "min_month": 0,
+                "variability_index": 0
+              },
+              "financial_load": {
+                "debt_to_income_ratio": 0.0,
+                "available_income_after_debt": 0
+              }
+            }
+          }
+        ]
+      },
+      {
+        "execution_id": "exec-2",
+        "fn_name": "rl_check_dicom",
+        "executed_at": "2026-06-29T21:48:10.487992",
+        "inputs": [
+          {
+            "path": "motor",
+            "value_type": "SolicitudMotor",
+            "value": "SolicitudMotor(id=SOL-2024-B999, applicants=1)"
+          }
+        ],
+        "outputs": [
+          {
+            "path": "decision",
+            "value_type": "object",
+            "value": {
+              "final_decision_code": "REJECTED",
+              "blocking_rule_codes": [
+                "RL_DICOM_HARD"
+              ],
+              "required_action_codes": []
+            }
+          }
+        ]
+      },
+      {
+        "execution_id": "exec-3",
+        "fn_name": "rl_renta_minima",
+        "executed_at": "2026-06-29T21:48:10.488419",
+        "inputs": [
+          {
+            "path": "motor",
+            "value_type": "SolicitudMotor",
+            "value": "SolicitudMotor(id=SOL-2024-B999, applicants=1)"
+          }
+        ],
+        "outputs": [
+          {
+            "path": "applicants[0].evaluation_results",
+            "value_type": "object",
+            "value": {
+              "income": {
+                "evaluation_code": "APPROVED",
+                "triggered_rule_codes": []
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "decision": {
+      "final_decision_code": "REJECTED",
+      "blocking_rule_codes": [
+        "RL_DICOM_HARD"
+      ],
+      "required_action_codes": []
+    },
+    "audit": {
+      "evaluated_at": "2026-06-29T21:48:10.486535"
+    },
+    "observations": [
+      {
+        "fn_name": "fn_calc_renta",
+        "message": "Promedio calculado App APP-RIESGO-01",
+        "value": 1800000.0
+      },
+      {
+        "fn_name": "SYSTEM",
+        "message": "Rechazo Automático: RL_DICOM_HARD",
+        "value": "Aplicante APP-RIESGO-01 tiene antecedentes comerciales bloqueantes."
+      }
+    ]
+  },
+  "flow_name": "p0"
+}

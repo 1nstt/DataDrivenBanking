@@ -1,0 +1,158 @@
+{
+  "solicitud": {
+    "id": "SOL-2024-A001",
+    "context": {
+      "property_id": "PROP-SANTIAGO-505",
+      "monthly_rent": 600000,
+      "currency": "CLP"
+    },
+    "applicants": [
+      {
+        "id": "APP-TITULAR-01",
+        "role": "TITULAR",
+        "income_source": {
+          "type": "DEPENDENT",
+          "dependent": {
+            "payslips": [
+              {
+                "month_index": 1,
+                "net_income": 2500000,
+                "period": "2023-12",
+                "gross_income": 3100000
+              },
+              {
+                "month_index": 2,
+                "net_income": 2500000,
+                "period": "2023-11",
+                "gross_income": 3100000
+              },
+              {
+                "month_index": 3,
+                "net_income": 2500000,
+                "period": "2023-10",
+                "gross_income": 3100000
+              }
+            ]
+          }
+        },
+        "identity": {
+          "full_name": "Ana María Perfecta",
+          "document_type": "RUT"
+        },
+        "commercial_data": {
+          "dicom": {
+            "is_hard_debt": false,
+            "score": 999
+          },
+          "estimated_monthly_debt_payment": 150000
+        },
+        "qualitative_data": {
+          "presentation": "Cliente muy ordenada",
+          "previous_landlord_comments": "Excelente pagadora",
+          "family_size": 2,
+          "has_pets": 1,
+          "references_count": 2
+        },
+        "calculated_metrics": {
+          "income": {
+            "avg_6m": 2500000.0
+          },
+          "financial_load": {
+            "debt_to_income_ratio": 0.0
+          }
+        },
+        "evaluation_results": {
+          "income": {
+            "evaluation_code": "APPROVED",
+            "triggered_rule_codes": []
+          }
+        }
+      }
+    ],
+    "fn_history": [
+      {
+        "execution_id": "exec-1",
+        "fn_name": "fn_calcular_promedio_renta",
+        "executed_at": "2026-06-29T21:48:10.477246",
+        "inputs": [
+          {
+            "path": "motor",
+            "value_type": "SolicitudMotor",
+            "value": "SolicitudMotor(id=SOL-2024-A001, applicants=1)"
+          }
+        ],
+        "outputs": [
+          {
+            "path": "applicants[0].calculated_metrics",
+            "value_type": "object",
+            "value": {
+              "income": {
+                "avg_6m": 2500000.0,
+                "avg_12m": 0,
+                "min_month": 0,
+                "variability_index": 0
+              },
+              "financial_load": {
+                "debt_to_income_ratio": 0.0,
+                "available_income_after_debt": 0
+              }
+            }
+          }
+        ]
+      },
+      {
+        "execution_id": "exec-2",
+        "fn_name": "rl_check_dicom",
+        "executed_at": "2026-06-29T21:48:10.478211",
+        "inputs": [
+          {
+            "path": "motor",
+            "value_type": "SolicitudMotor",
+            "value": "SolicitudMotor(id=SOL-2024-A001, applicants=1)"
+          }
+        ],
+        "outputs": []
+      },
+      {
+        "execution_id": "exec-3",
+        "fn_name": "rl_renta_minima",
+        "executed_at": "2026-06-29T21:48:10.478650",
+        "inputs": [
+          {
+            "path": "motor",
+            "value_type": "SolicitudMotor",
+            "value": "SolicitudMotor(id=SOL-2024-A001, applicants=1)"
+          }
+        ],
+        "outputs": [
+          {
+            "path": "applicants[0].evaluation_results",
+            "value_type": "object",
+            "value": {
+              "income": {
+                "evaluation_code": "APPROVED",
+                "triggered_rule_codes": []
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "decision": {
+      "final_decision_code": "APPROVED",
+      "blocking_rule_codes": [],
+      "required_action_codes": []
+    },
+    "audit": {
+      "evaluated_at": "2026-06-29T21:48:10.462016"
+    },
+    "observations": [
+      {
+        "fn_name": "fn_calc_renta",
+        "message": "Promedio calculado App APP-TITULAR-01",
+        "value": 2500000.0
+      }
+    ]
+  },
+  "flow_name": "p0"
+}
